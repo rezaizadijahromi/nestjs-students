@@ -4,6 +4,5 @@ export class createQuestionDto {
   @IsNotEmpty()
   title: string;
   @IsNotEmpty()
-  @IsDateString()
-  deadLineDate: Date;
+  remainingDay: number;
 }

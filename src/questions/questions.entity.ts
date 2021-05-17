@@ -1,11 +1,17 @@
 import {
   BaseEntity,
   Column,
-  CreateDateColumn,
   Entity,
-  Generated,
+  JoinColumn,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+
+import { Master } from './masters.entity';
+import { Lesson } from './lessons.entity';
 
 @Entity()
 export class Questions extends BaseEntity {
@@ -15,22 +21,20 @@ export class Questions extends BaseEntity {
   @Column()
   title: string;
 
+  @ManyToOne((type) => Lesson, (lesson) => lesson.name)
+  lesson: Lesson;
+
+  @ManyToOne((type) => Master, (master) => master.name)
+  master: Master;
+
   @Column()
-  @Generated('uuid')
-  code: string;
-
-  // they added when the their entitesl compeleted
-  //   @Column()
-  //   lessons: string;
-
-  //   @Column()
-  //   master: string;
-
-  @CreateDateColumn()
   initiatedDate: Date;
 
   @Column()
   deadLineDate: Date;
+
+  @Column()
+  remainingDay: number;
 
   //   @Column()
   //   associatedAnswer:
