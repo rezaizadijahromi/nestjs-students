@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Answer } from './answers.entity';
 import { createQuestionDto } from './dto/questions.dto';
 import { Lesson } from './lessons.entity';
 import { Master } from './masters.entity';
@@ -14,15 +15,16 @@ export class QuestionsService {
   ) {}
 
   async getAllQuestions(): Promise<Questions[]> {
-    const question = await Questions.find({ relations: ['master', 'lesson'] });
-    console.log(question);
+    const question = await Questions.find({
+      relations: ['master', 'lesson', 'associatedAnswer'],
+    });
 
     return question;
   }
 
   async getQuestion(id: string) {
     const question = await this.questionsRepository.findOne(id, {
-      relations: ['master', 'lesson'],
+      relations: ['master', 'lesson', 'associatedAnswer'],
     });
 
     if (!question) {
@@ -59,6 +61,7 @@ export class QuestionsService {
       question.deadLineDate = deadLine;
       question.master = masterName;
       question.lesson = lessonName;
+      // question.associatedAnswer = [];
 
       await question.save();
 
@@ -110,5 +113,45 @@ export class QuestionsService {
       throw new NotFoundException('Master has no data');
     }
     return lesson;
+  }
+}
+
+@Injectable()
+export class AnswerService {
+  constructor(public QuestionsService: QuestionsService) {}
+
+  async getAllAnswers() {
+    const answer = Answer.find({});
+
+    if (answer) {
+      return answer;
+    }
+
+    throw new NotFoundException('No answer data');
+  }
+
+  async createAnswer(title: string, description: string, questionId: string) {
+    const questionExist = await this.QuestionsService.getQuestion(questionId);
+
+    if (!questionExist) {
+      throw new NotFoundException(`Question with id: ${questionId} not found`);
+    }
+
+    const answer = new Answer();
+    answer.title = title;
+    answer.description = description;
+    answer.questions = questionExist;
+    await answer.save();
+
+    const newAnswer = {
+      id: answer.id,
+      title: answer.title,
+      description: answer.description,
+    } as Answer;
+    questionExist.associatedAnswer.push(newAnswer);
+
+    await questionExist.save();
+
+    return answer;
   }
 }

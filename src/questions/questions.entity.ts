@@ -3,6 +3,7 @@ import {
   Column,
   Entity,
   JoinColumn,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
@@ -12,6 +13,7 @@ import {
 
 import { Master } from './masters.entity';
 import { Lesson } from './lessons.entity';
+import { Answer } from './answers.entity';
 
 @Entity()
 export class Questions extends BaseEntity {
@@ -36,6 +38,8 @@ export class Questions extends BaseEntity {
   @Column()
   remainingDay: number;
 
-  //   @Column()
-  //   associatedAnswer:
+  @OneToMany((type) => Answer, (answer) => answer.questions, {
+    eager: true,
+  })
+  associatedAnswer: Answer[];
 }
