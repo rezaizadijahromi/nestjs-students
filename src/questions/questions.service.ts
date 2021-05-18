@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Answer } from './answers.entity';
+import { Answer } from './entitys/answers.entity';
 import { createQuestionDto } from './dto/questions.dto';
-import { Lesson } from './lessons.entity';
-import { Master } from './masters.entity';
-import { Questions } from './questions.entity';
+import { Lesson } from './entitys/lessons.entity';
+import { Master } from './entitys/masters.entity';
+import { Questions } from './entitys/questions.entity';
 import { QuestionsRepository } from './questions.repository';
+import { Profile } from './entitys/profile.entity';
 
 @Injectable()
 export class QuestionsService {
@@ -130,7 +131,12 @@ export class AnswerService {
     throw new NotFoundException('No answer data');
   }
 
-  async createAnswer(title: string, description: string, questionId: string) {
+  async createAnswer(
+    title: string,
+    description: string,
+    questionId: string,
+    user: Profile,
+  ) {
     const questionExist = await this.QuestionsService.getQuestion(questionId);
 
     if (!questionExist) {
@@ -149,9 +155,26 @@ export class AnswerService {
       description: answer.description,
     } as Answer;
     questionExist.associatedAnswer.push(newAnswer);
+    // questionExist.userAnswers.push(user)
 
     await questionExist.save();
 
     return answer;
+  }
+}
+
+@Injectable()
+export class UserService {
+  constructor(
+    private QuestionsService: QuestionsService,
+    private AnswerService: AnswerService,
+  ) {}
+  async createUser(name: string) {
+    const user = new Profile();
+    user.name = name;
+
+    await user.save();
+
+    return user;
   }
 }

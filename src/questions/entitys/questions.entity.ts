@@ -14,6 +14,7 @@ import {
 import { Master } from './masters.entity';
 import { Lesson } from './lessons.entity';
 import { Answer } from './answers.entity';
+import { Profile } from './profile.entity';
 
 @Entity()
 export class Questions extends BaseEntity {
@@ -38,8 +39,14 @@ export class Questions extends BaseEntity {
   @Column()
   remainingDay: number;
 
+  @OneToMany((type) => Profile, (profile) => profile.userReply)
+  userAnswerQuestion: Profile[];
+
   @OneToMany((type) => Answer, (answer) => answer.questions, {
-    eager: true,
+    eager: false,
   })
   associatedAnswer: Answer[];
+
+  //   @OneToMany((type) => User, (user) => user.likes)
+  //   userLikes: User[];
 }

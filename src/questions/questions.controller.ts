@@ -3,24 +3,29 @@ import {
   Controller,
   Get,
   Param,
-  Patch,
   Post,
-  Res,
-  Response,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { createQuestionDto } from './dto/questions.dto';
-import { Lesson } from './lessons.entity';
-import { Master } from './masters.entity';
-import { Questions } from './questions.entity';
-import { AnswerService, QuestionsService } from './questions.service';
+import { GetUser } from './get-user.decorators';
+import { Lesson } from './entitys/lessons.entity';
+import { Master } from './entitys/masters.entity';
+import { Questions } from './entitys/questions.entity';
+import {
+  AnswerService,
+  QuestionsService,
+  UserService,
+  // UserService,
+} from './questions.service';
+import { Profile } from './entitys/profile.entity';
 
 @Controller('questions')
 export class QuestionsController {
   constructor(
     private questionsService: QuestionsService,
     private AnswerService: AnswerService,
+    private userService: UserService,
   ) {}
 
   @Get('/master')
@@ -74,12 +79,32 @@ export class QuestionsController {
 
   @Post('/:id/answer')
   createAnswer(
+    @GetUser() user: Profile,
     @Param('id') id: string,
     @Body('title') title: string,
     @Body('description') description: string,
   ) {
-    const answer = this.AnswerService.createAnswer(title, description, id);
+    const answer = this.AnswerService.createAnswer(
+      title,
+      description,
+      id,
+      user,
+    );
 
     return answer;
   }
+
+  @Post()
+  createUser(@Body() name: string) {
+    return this.userService.createUser(name);
+  }
+}
+
+@Controller('users')
+export class UsersController {
+  constructor(
+    private questionsService: QuestionsService,
+    private AnswerService: AnswerService,
+    private userService: UserService,
+  ) {}
 }
