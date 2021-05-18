@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Answer } from './answers.entity';
 import { createQuestionDto } from './dto/questions.dto';
@@ -7,6 +13,9 @@ import { Master } from './masters.entity';
 import { Questions } from './questions.entity';
 import { QuestionsRepository } from './questions.repository';
 import { Profile } from './profile.entity';
+import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
+import { jwtPayload } from './jwt-payload.interface';
 
 @Injectable()
 export class QuestionsService {
@@ -170,17 +179,51 @@ export class UserService {
   constructor(
     private QuestionsService: QuestionsService,
     private AnswerService: AnswerService,
+    private jwtService: JwtService,
   ) {}
-  async createUser(name: string) {
+
+  private async hashPassword(password: string, salt: string) {
+    return bcrypt.hash(password, salt);
+  }
+
+  async signUp(name: string, password: string) {
     const user = new Profile();
     user.name = name;
-    await user.save();
+    user.salt = await bcrypt.genSalt();
+    user.password = await this.hashPassword(password, user.salt);
+    try {
+      await user.save();
+    } catch (error) {
+      if (error.code === '23505') {
+        throw new ConflictException('Username is taken');
+      } else {
+        throw new InternalServerErrorException();
+      }
+    }
     return user;
   }
 
-  async getUser(id: number) {
-    const user = await Profile.findOne({ id: id });
+  async validateUserPassword(name: string, password: string) {
+    const user = await Profile.findOne({ name });
 
-    return user;
+    if (user && (await user.validatePassword(password))) {
+      return user.name;
+    } else {
+      return null;
+    }
+  }
+
+  async signIn(name: string, password: string) {
+    const username = await this.validateUserPassword(name, password);
+
+    if (!username) {
+      throw new UnauthorizedException('Invalid Credential');
+    }
+
+    const payload: jwtPayload = { username };
+
+    const accessToken = await this.jwtService.sign(payload);
+
+    return { accessToken };
   }
 }

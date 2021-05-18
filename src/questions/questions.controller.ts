@@ -103,13 +103,13 @@ export class UsersController {
     private userService: UserService,
   ) {}
 
-  @Get('/:id')
-  getUser(@Param('id') id: number) {
-    return this.userService.getUser(id);
+  @Get()
+  getUser(@Body('name') name: string, @Body('password') password: string) {
+    return this.userService.signIn(name, password);
   }
 
   @Post()
-  createUser(@Body('name') name: string) {
-    return this.userService.createUser(name);
+  createUser(@Body('name') name: string, @Body('password') password: string) {
+    return this.userService.signUp(name, password);
   }
 }
