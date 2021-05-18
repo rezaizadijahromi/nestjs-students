@@ -9,16 +9,16 @@ import {
 } from '@nestjs/common';
 import { createQuestionDto } from './dto/questions.dto';
 import { GetUser } from './get-user.decorators';
-import { Lesson } from './entitys/lessons.entity';
-import { Master } from './entitys/masters.entity';
-import { Questions } from './entitys/questions.entity';
+import { Lesson } from './lessons.entity';
+import { Master } from './masters.entity';
+import { Questions } from './questions.entity';
 import {
   AnswerService,
   QuestionsService,
   UserService,
   // UserService,
 } from './questions.service';
-import { Profile } from './entitys/profile.entity';
+import { Profile } from './profile.entity';
 
 @Controller('questions')
 export class QuestionsController {
@@ -93,11 +93,6 @@ export class QuestionsController {
 
     return answer;
   }
-
-  @Post()
-  createUser(@Body() name: string) {
-    return this.userService.createUser(name);
-  }
 }
 
 @Controller('users')
@@ -107,4 +102,14 @@ export class UsersController {
     private AnswerService: AnswerService,
     private userService: UserService,
   ) {}
+
+  @Get('/:id')
+  getUser(@Param('id') id: number) {
+    return this.userService.getUser(id);
+  }
+
+  @Post()
+  createUser(@Body('name') name: string) {
+    return this.userService.createUser(name);
+  }
 }

@@ -1,12 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Answer } from './entitys/answers.entity';
+import { Answer } from './answers.entity';
 import { createQuestionDto } from './dto/questions.dto';
-import { Lesson } from './entitys/lessons.entity';
-import { Master } from './entitys/masters.entity';
-import { Questions } from './entitys/questions.entity';
+import { Lesson } from './lessons.entity';
+import { Master } from './masters.entity';
+import { Questions } from './questions.entity';
 import { QuestionsRepository } from './questions.repository';
-import { Profile } from './entitys/profile.entity';
+import { Profile } from './profile.entity';
 
 @Injectable()
 export class QuestionsService {
@@ -139,6 +139,8 @@ export class AnswerService {
   ) {
     const questionExist = await this.QuestionsService.getQuestion(questionId);
 
+    console.log(user);
+
     if (!questionExist) {
       throw new NotFoundException(`Question with id: ${questionId} not found`);
     }
@@ -155,7 +157,7 @@ export class AnswerService {
       description: answer.description,
     } as Answer;
     questionExist.associatedAnswer.push(newAnswer);
-    // questionExist.userAnswers.push(user)
+    questionExist.userAnswers.push({ name: 'reza' } as Profile);
 
     await questionExist.save();
 
@@ -172,8 +174,12 @@ export class UserService {
   async createUser(name: string) {
     const user = new Profile();
     user.name = name;
-
     await user.save();
+    return user;
+  }
+
+  async getUser(id: number) {
+    const user = await Profile.findOne({ id: id });
 
     return user;
   }

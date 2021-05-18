@@ -16,11 +16,8 @@ export class Profile extends BaseEntity {
   @Column()
   name: string;
 
-  @ManyToOne((type) => Questions, (question) => question.userAnswerQuestion, {
-    eager: true,
+  @ManyToOne((type) => Questions, (question) => question.userAnswers, {
+    eager: false,
   })
-  userReply: Questions;
-
-  //  @ManyToOne((type) => Questions, (question) => question.userLikes)
-  //   likes: Questions;
+  questions: Questions;
 }

@@ -39,14 +39,11 @@ export class Questions extends BaseEntity {
   @Column()
   remainingDay: number;
 
-  @OneToMany((type) => Profile, (profile) => profile.userReply)
-  userAnswerQuestion: Profile[];
-
-  @OneToMany((type) => Answer, (answer) => answer.questions, {
-    eager: false,
-  })
+  @OneToMany((type) => Answer, (answer) => answer.questions)
   associatedAnswer: Answer[];
 
+  @OneToMany((type) => Profile, (profile) => profile.questions)
+  userAnswers: Profile[];
   //   @OneToMany((type) => User, (user) => user.likes)
   //   userLikes: User[];
 }
