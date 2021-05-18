@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   InternalServerErrorException,
@@ -16,6 +17,7 @@ import { Profile } from './profile.entity';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { jwtPayload } from './jwt-payload.interface';
+import { exception } from 'console';
 
 @Injectable()
 export class QuestionsService {
@@ -34,7 +36,7 @@ export class QuestionsService {
 
   async getQuestion(id: string) {
     const question = await this.questionsRepository.findOne(id, {
-      relations: ['master', 'lesson', 'associatedAnswer'],
+      relations: ['master', 'lesson', 'associatedAnswer', 'userAnswers'],
     });
 
     if (!question) {
@@ -105,8 +107,9 @@ export class QuestionsService {
     return master;
   }
 
-  async createLesson(name: string): Promise<Lesson> {
+  async createLesson(name: string, req): Promise<Lesson> {
     console.log('Lesson');
+    console.log(req.user);
 
     const lesson = new Lesson();
     lesson.name = name;
@@ -144,11 +147,11 @@ export class AnswerService {
     title: string,
     description: string,
     questionId: string,
-    user: Profile,
+    req,
   ) {
     const questionExist = await this.QuestionsService.getQuestion(questionId);
 
-    console.log(user);
+    console.log(req.user);
 
     if (!questionExist) {
       throw new NotFoundException(`Question with id: ${questionId} not found`);
@@ -158,19 +161,38 @@ export class AnswerService {
     answer.title = title;
     answer.description = description;
     answer.questions = questionExist;
-    await answer.save();
 
-    const newAnswer = {
-      id: answer.id,
-      title: answer.title,
-      description: answer.description,
-    } as Answer;
-    questionExist.associatedAnswer.push(newAnswer);
-    questionExist.userAnswers.push({ name: 'reza' } as Profile);
+    console.log('first');
 
-    await questionExist.save();
+    // req.user.questionsAnswer.push(questionExist);
+    console.log('second');
 
-    return answer;
+    // const isLiked =
+    //     post.likes.filter((like) => like.user.toString() === userId).length > 0;
+
+    const userAnswerdQuestion = questionExist.userAnswers.filter(
+      (usr) => usr.id === req.user.id,
+    );
+
+    console.log(userAnswerdQuestion);
+
+    if (!userAnswerdQuestion) {
+      const newAnswer = {
+        id: answer.id,
+        title: answer.title,
+        description: answer.description,
+      } as Answer;
+      questionExist.associatedAnswer.push(newAnswer);
+      questionExist.userAnswers.push(req.user);
+      console.log('third');
+
+      await answer.save();
+      await questionExist.save();
+
+      return answer;
+    } else {
+      throw new BadRequestException('You already answerd this question');
+    }
   }
 }
 
@@ -188,7 +210,7 @@ export class UserService {
 
   async signUp(name: string, password: string) {
     const user = new Profile();
-    user.name = name;
+    user.username = name;
     user.salt = await bcrypt.genSalt();
     user.password = await this.hashPassword(password, user.salt);
     try {
@@ -204,10 +226,10 @@ export class UserService {
   }
 
   async validateUserPassword(name: string, password: string) {
-    const user = await Profile.findOne({ name });
+    const user = await Profile.findOne({ username: name });
 
     if (user && (await user.validatePassword(password))) {
-      return user.name;
+      return user.username;
     } else {
       return null;
     }
@@ -222,7 +244,7 @@ export class UserService {
 
     const payload: jwtPayload = { username };
 
-    const accessToken = await this.jwtService.sign(payload);
+    const accessToken = this.jwtService.sign(payload);
 
     return { accessToken };
   }

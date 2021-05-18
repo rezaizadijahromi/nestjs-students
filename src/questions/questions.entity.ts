@@ -42,7 +42,7 @@ export class Questions extends BaseEntity {
   @OneToMany((type) => Answer, (answer) => answer.questions)
   associatedAnswer: Answer[];
 
-  @OneToMany((type) => Profile, (profile) => profile.questions)
+  @OneToMany((type) => Profile, (profile) => profile.questionsAnswer)
   userAnswers: Profile[];
   //   @OneToMany((type) => User, (user) => user.likes)
   //   userLikes: User[];

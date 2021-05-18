@@ -4,6 +4,8 @@ import {
   Get,
   Param,
   Post,
+  Req,
+  UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
@@ -19,7 +21,9 @@ import {
   // UserService,
 } from './questions.service';
 import { Profile } from './profile.entity';
+import { AuthGuard } from '@nestjs/passport';
 
+@UseGuards(AuthGuard())
 @Controller('questions')
 export class QuestionsController {
   constructor(
@@ -73,23 +77,18 @@ export class QuestionsController {
   }
 
   @Post('/lesson')
-  createLesson(@Body('name') name: string) {
-    return this.questionsService.createLesson(name);
+  createLesson(@Req() req: Profile, @Body('name') name: string) {
+    return this.questionsService.createLesson(name, req);
   }
 
   @Post('/:id/answer')
   createAnswer(
-    @GetUser() user: Profile,
+    @Req() req: Profile,
     @Param('id') id: string,
     @Body('title') title: string,
     @Body('description') description: string,
   ) {
-    const answer = this.AnswerService.createAnswer(
-      title,
-      description,
-      id,
-      user,
-    );
+    const answer = this.AnswerService.createAnswer(title, description, id, req);
 
     return answer;
   }
@@ -103,12 +102,12 @@ export class UsersController {
     private userService: UserService,
   ) {}
 
-  @Get()
+  @Post('/signin')
   getUser(@Body('name') name: string, @Body('password') password: string) {
     return this.userService.signIn(name, password);
   }
 
-  @Post()
+  @Post('/signup')
   createUser(@Body('name') name: string, @Body('password') password: string) {
     return this.userService.signUp(name, password);
   }

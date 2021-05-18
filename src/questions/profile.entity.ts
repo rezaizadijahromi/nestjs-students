@@ -5,17 +5,19 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  Unique,
 } from 'typeorm';
 import { Questions } from './questions.entity';
 import * as bcrypt from 'bcrypt';
 
 @Entity()
+@Unique(['username'])
 export class Profile extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-  name: string;
+  username: string;
 
   @Column()
   password: string;
@@ -26,7 +28,7 @@ export class Profile extends BaseEntity {
   @ManyToOne((type) => Questions, (question) => question.userAnswers, {
     eager: false,
   })
-  questions: Questions;
+  questionsAnswer: Questions[];
 
   async validatePassword(password: string) {
     const hash = await bcrypt.hash(password, this.salt);
