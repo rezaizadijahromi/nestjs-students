@@ -11,16 +11,16 @@ import {
 } from '@nestjs/common';
 import { createQuestionDto } from './dto/questions.dto';
 import { GetUser } from './get-user.decorators';
-import { Lesson } from './lessons.entity';
-import { Master } from './masters.entity';
-import { Questions } from './questions.entity';
+import { Lesson } from './entity/lessons.entity';
+import { Master } from './entity/masters.entity';
+import { Questions } from './entity/questions.entity';
 import {
   AnswerService,
   QuestionsService,
   UserService,
   // UserService,
 } from './questions.service';
-import { Profile } from './profile.entity';
+import { Profile } from './entity/profile.entity';
 import { AuthGuard } from '@nestjs/passport';
 
 @UseGuards(AuthGuard())

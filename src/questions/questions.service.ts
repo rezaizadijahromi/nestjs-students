@@ -7,13 +7,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Answer } from './answers.entity';
+import { Answer } from './entity/answers.entity';
 import { createQuestionDto } from './dto/questions.dto';
-import { Lesson } from './lessons.entity';
-import { Master } from './masters.entity';
-import { Questions } from './questions.entity';
+import { Lesson } from './entity/lessons.entity';
+import { Master } from './entity/masters.entity';
+import { Questions } from './entity/questions.entity';
 import { QuestionsRepository } from './questions.repository';
-import { Profile } from './profile.entity';
+import { Profile } from './entity/profile.entity';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { jwtPayload } from './jwt-payload.interface';
